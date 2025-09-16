@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
       input.name = nameLower;
       input.id = names;
       input.setAttribute('data-qa', nameLower);
+      input.required = true;
 
       options.forEach((optText) => {
         const opt = document.createElement('option');
@@ -97,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
       input.name = nameLower;
       input.id = names;
       input.setAttribute('data-qa', nameLower);
+      input.required = true;
     }
 
     label.appendChild(input);
@@ -203,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!formValid) {
       notification.textContent = 'Будь ласка, виправте помилки у формі';
       notification.className = 'error';
-      notification.style.color = 'red';
+      notification.style.color = 'green';
       notification.style.opacity = '1';
       notification.style.transform = 'translateY(0)';
     } else {
