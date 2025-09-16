@@ -5,18 +5,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const thThead = tableThead.querySelectorAll('tr th');
 
   const tableTbody = document.querySelector('table tbody');
-  const lislAllTrTbody = Array.from(tableTbody.querySelectorAll('tr'));
+  let lastSortedIndex = null;
 
   thThead.forEach((header, index) => {
     header.addEventListener('click', () => {
-      const currentOrder = header.dataset.order === 'asc' ? 'desc' : 'asc';
+      thThead.forEach((h, i) => {
+        if (i !== index) {
+          h.dataset.order = '';
+        }
+      });
 
+      let currentOrder;
+
+      if (lastSortedIndex !== index) {
+        currentOrder = 'asc';
+      } else {
+        currentOrder = header.dataset.order === 'asc' ? 'desc' : 'asc';
+      }
       header.dataset.order = currentOrder;
+      lastSortedIndex = index;
+
+      const lislAllTrTbody = Array.from(tableTbody.querySelectorAll('tr'));
 
       lislAllTrTbody.sort((a, b) => {
         const cellA = a.cells[index].textContent.trim();
         const cellB = b.cells[index].textContent.trim();
-
         const numA = parseFloat(cellA.replace(/[^\d.]/g, ''));
         const numB = parseFloat(cellB.replace(/[^\d.]/g, ''));
 
@@ -34,13 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const tdTbody = tableTbody.querySelectorAll('tr');
+  tableTbody.addEventListener('click', (e) => {
+    const tr = e.target.closest('tr');
 
-  tdTbody.forEach((tr) => {
-    tr.addEventListener('click', () => {
-      tdTbody.forEach((row) => row.classList.remove('active'));
-      tr.classList.add('active');
-    });
+    if (!tr) {
+      return;
+    }
+
+    tableTbody
+      .querySelectorAll('tr')
+      .forEach((row) => row.classList.remove('active'));
+    tr.classList.add('active');
   });
 
   const form = document.createElement('form');
@@ -59,12 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
     label.textContent = labelText;
 
     let input;
+    const nameLower = names.toLowerCase();
 
     if (type === 'select') {
       input = document.createElement('select');
-      input.name = names;
+      input.name = nameLower;
       input.id = names;
-      input.setAttribute('data-qa', names.toLowerCase());
+      input.setAttribute('data-qa', nameLower);
 
       options.forEach((optText) => {
         const opt = document.createElement('option');
@@ -76,9 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       input = document.createElement('input');
       input.type = type;
-      input.name = names;
+      input.name = nameLower;
       input.id = names;
-      input.setAttribute('data-qa', names.toLowerCase());
+      input.setAttribute('data-qa', nameLower);
     }
 
     label.appendChild(input);
@@ -92,12 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
     wrapper.appendChild(msg);
 
     input.addEventListener('input', () => {
-      if (names === 'Name') {
+      if (input.name === 'name') {
         msg.textContent =
           input.value.length < 4
             ? `Ім'я повинно містити мінімум 4 символи`
             : '';
-      } else if (names === 'Age') {
+      } else if (input.name === 'age') {
         const age = parseInt(input.value, 10);
 
         msg.textContent =
@@ -162,10 +180,10 @@ document.addEventListener('DOMContentLoaded', () => {
     inputs.forEach((input) => {
       const msg = input.parentNode.nextElementSibling;
 
-      if (input.name === 'Name' && input.value.length < 4) {
+      if (input.name === 'name' && input.value.length < 4) {
         msg.textContent = `Ім'я повинно містити мінімум 4 символи`;
         formValid = false;
-      } else if (input.name === 'Age') {
+      } else if (input.name === 'age') {
         const age = parseInt(input.value, 10);
 
         if (!input.value || age < 18 || age > 90) {
@@ -191,34 +209,27 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       notification.textContent = 'Новий співробітник успішно доданий!';
       notification.className = 'success';
-      notification.style.color = 'red';
+      notification.style.color = 'green';
       notification.style.opacity = '1';
       notification.style.transform = 'translateY(0)';
 
       setTimeout(() => {
         notification.style.opacity = '0';
         notification.style.transform = 'translateY(-20px)';
+        notification.className = '';
       }, 2000);
 
-      const tBody = document.querySelector('table tbody');
-      const nAme = inputs[0].value.trim();
-      const pos = inputs[1].value.trim();
-      const office = inputs[2].value;
-      const aGe = Number(inputs[3].value);
-      const salary = Number(inputs[4].value);
-      const salaryFormatted = `$${salary.toLocaleString('en-US')}`;
-
+      const tBody = tableTbody;
       const row = document.createElement('tr');
 
       row.innerHTML = `
-        <td>${nAme}</td>
-        <td>${pos}</td>
-        <td>${office}</td>
-        <td>${aGe}</td>
-        <td>${salaryFormatted}</td>
+        <td>${inputs[0].value.trim()}</td>
+        <td>${inputs[1].value.trim()}</td>
+        <td>${inputs[2].value}</td>
+        <td>${Number(inputs[3].value)}</td>
+        <td>$${Number(inputs[4].value).toLocaleString('en-US')}</td>
       `;
       tBody.appendChild(row);
-
       form.reset();
     }
   });
